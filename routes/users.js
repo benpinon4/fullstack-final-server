@@ -22,15 +22,36 @@ router.post("/register", async function (req, res, next) {
   user = {
     email,
     password: hash,
+    orderHistory: [],
     id: uuid(),
   };
 
-  const addUser = await db().collection("users").insertOne(user);
-
-  res.json({
-    success: true,
-    user,
+// Existing User Check //
+  const retrieveUser = await db().collection("users").findOne({
+    email: email,
   });
+
+  if(retrieveUser === null){
+    const addUser = await db().collection("users").insertOne(user);
+
+    res.json({
+      success: true,
+      user,
+    });
+    return
+  }
+
+ if(retrieveUser !== undefined){
+  console.log("Email Already Exists")
+  res.json({
+    success: false,
+    message: "The email entered already exists"
+    
+  });
+  
+ }
+// Existing User Check //
+
 });
 
 router.post("/login", async function (req, res, next) {
@@ -107,7 +128,7 @@ router.get('/message', async function (req, res, next){
     return res.json({
       success: true,
       verified: verified,
-      message: "Logged in as",
+      message: "",
       user: userScope
     })
   }
