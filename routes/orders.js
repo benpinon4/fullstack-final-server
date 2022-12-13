@@ -63,7 +63,34 @@ router.post("/shipping-billing", async function (req, res, next) {
         incommingshippingInfo,
         incommingbillingInfo,        
     })
-})  
+})
+
+router.post("/send-order", async function (req, res, next){
+    const incommingOrder = req.body.completeOrder
+    const generateOrderID = uuid()
+    const newOrder = {
+       ...incommingOrder,   
+       orderID: generateOrderID
+    }
+
+    console.log(newOrder)
+
+    const addOrder = await db().collection("orders").insertOne(newOrder)
+
+    const addOrderToUser = await db().collection("users").updateOne({"id": incommingOrder.userID},
+    {$addToSet: {orderHistory: newOrder}})
+
+
+
+    res.json({
+        sucess: true,
+        addedOrderOrders: addOrder,
+
+        orderID: generateOrderID,
+        orderSummary: incommingOrder
+        
+    })
+})
 
 module.exports = router;
 
